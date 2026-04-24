@@ -7,22 +7,23 @@ const OpenAI = require("openai");
 
 const app = express();
 
-// ✅ Middleware (ONLY ONCE)
-app.use(express.json());
-app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://focusflow-frontend-xyz.onrender.com"
-  ]
-}));
+/* ================= ✅ CORS (FIXED) ================= */
 
-/* ENV CHECK */
+// 🔥 simple + safe (no crash, handles preflight automatically)
+app.use(cors());
+
+// body parser
+app.use(express.json());
+
+/* ================= ENV CHECK ================= */
+
 if (!process.env.MONGO_URL) {
   console.error("❌ MONGO_URL missing in .env");
   process.exit(1);
 }
 
-/* MONGODB CONNECTION */
+/* ================= MONGODB ================= */
+
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => {
@@ -131,6 +132,8 @@ const client = new OpenAI({
 
 app.post("/api/ai", async (req, res) => {
   try {
+    console.log("✅ AI route hit");
+
     const { messages, system } = req.body;
 
     const response = await client.chat.completions.create({
@@ -157,7 +160,7 @@ app.get("/", (req, res) => {
   res.send("FocusFlow backend is running 🚀");
 });
 
-/* ================= START SERVER ================= */
+/* ================= START ================= */
 
 const PORT = process.env.PORT || 5000;
 
